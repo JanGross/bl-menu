@@ -12,10 +12,15 @@ MenuItem::MenuItem(SDL_Renderer* _gRenderer)
 void MenuItem::render()
 {
     SDL_Rect rDest;
-    rDest.h = 128; rDest.w = 256; rDest.x = this->X; rDest.y = this->Y; 
+    rDest.h = 128;
+    rDest.w = 256;
+    
+    float yOffset = 100-this->X;
+    
+    rDest.x = this->X;
+    rDest.y = this->Y + this->yOffset;
+
     SDL_RenderCopy( this->gRenderer, this->texture, NULL, &rDest);
-    //SDL_RenderPresent( this->gRenderer );
-    std::cout << "Rendering element " << this << std::endl;
 }
 
 void MenuItem::setX(int _X)
@@ -26,6 +31,21 @@ void MenuItem::setX(int _X)
 void MenuItem::setY(int _Y)
 {
     this->Y = _Y;
+}
+
+void MenuItem::setYOffset(int _offset)
+{
+    this->yOffset = _offset;
+}
+
+void MenuItem::setXOffset(int _offset)
+{
+    this->xOffset = _offset;
+}
+
+int MenuItem::getYOffset()
+{
+    return this->yOffset;
 }
 
 SDL_Texture* MenuItem::loadTexture(std::string imagePath)

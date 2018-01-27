@@ -1,16 +1,20 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <iostream>
+#include <unistd.h>
 #include <list>
 #include "menu_entry.h"
 
-const int SCREEN_WIDTH = 800;
-const int SCREEN_HEIGHT = 600;
+const int SCREEN_WIDTH = 1300;
+const int SCREEN_HEIGHT = 768;
 
 SDL_Window* gWindow = NULL;
 SDL_Surface* gSurface = NULL;
 SDL_Renderer* gRenderer = NULL;
 SDL_Texture* loadTexture(std::string);
+
+int selectedIndex = 0;
+int currentXOffset = 0;
 
 bool init()
 {
@@ -75,23 +79,54 @@ void loop(std::list<MenuItem> menuItems)
         SDL_Rect rDest;
         while( SDL_PollEvent( &e ) != 0)
         {
-            if( e.type == SDL_QUIT )
+            switch (e.type)
             {
-                quit = true;
-            }
-            if( e.type == SDL_MOUSEMOTION )
-            {
-                SDL_GetMouseState(&rDest.x, &rDest.y);
+                case SDL_KEYDOWN:
+                    selectedIndex++;
+                    break;
+                case SDL_MOUSEBUTTONDOWN:
+                    selectedIndex--;
+                    break;
+                case SDL_QUIT:
+                    quit = true;
+                    break;
+            
             }
         }
 
         std::list<MenuItem>::iterator it;
+        if (selectedIndex >= menuItems.size())
+        {
+            selectedIndex = 0;
+        }
         for (it = menuItems.begin(); it != menuItems.end(); it++)
         {
-            (*it).setX(rDest.x + (128 * std::distance(menuItems.begin(), it)));
+            int index = std::distance(menuItems.begin(), it);
+            if (currentXOffset > (-300 * selectedIndex)) {
+                currentXOffset--;
+                usleep(100);
+            }
+            if (currentXOffset < (-300 * selectedIndex)) {
+                currentXOffset++;
+                usleep(100);
+            }
+            int targetYOffset = selectedIndex  == index ? 15 : 200;
+            if (index == selectedIndex -1 || index == selectedIndex +1)
+            {
+                targetYOffset = 200;
+            }
+            int currentYOffset = (int)(*it).getYOffset();
+            if (currentYOffset < targetYOffset) {
+                (*it).setYOffset(++currentYOffset);
+                usleep(100);
+            }else if (currentYOffset > targetYOffset)
+            {
+                (*it).setYOffset(--currentYOffset);
+                usleep(100);
+            }
+            (*it).setX(currentXOffset - (-300 * index)+500);
             (*it).setY(150);
             (*it).render();
-            it++;
         }
         SDL_RenderPresent( gRenderer );
         SDL_RenderClear( gRenderer );
@@ -106,68 +141,11 @@ int main( int argc, char *args[] )
     SDL_UpdateWindowSurface( gWindow );
 
     std::list<MenuItem> menuItems;
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-    menuItems.push_back(MenuItem(gRenderer));
-
-
+    for (int i = 0; i < 5; i++)
+    {
+        menuItems.push_back(MenuItem(gRenderer));
+    }
+    
     loop(menuItems);
 
     return 0;
